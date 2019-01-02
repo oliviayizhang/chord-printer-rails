@@ -398,7 +398,7 @@ class ChordsController < ApplicationController
       @chord_recipe = key
       @chord_name = value
 
-    #splits chord formula shorthand into an array, "x32010" becomes {"x", "3", "0", "1", "0"}
+    #splits chord formula shorthand into an array, "x32010" becomes ["x", "3", "0", "1", "0"]
       def getChordArray(chord)
         if chord.length == 6
           chord_split = chord.chars
@@ -427,7 +427,7 @@ class ChordsController < ApplicationController
       @highest = findHighest(@chord_array)
       @label_fret = @roman_values[1]
 
-      #comparison to choose fret label
+      #comparison to choose label fret
       if @highest > 5
         @difference = @highest - 5
         @modified_chord_array = modifiedChordArray(@chord_array)

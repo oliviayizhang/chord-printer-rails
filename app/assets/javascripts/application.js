@@ -14,4 +14,3 @@
 //= require turbolinks
 //= require_tree .
 //= require index
-//= require html2canvas
