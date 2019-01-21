@@ -1,17 +1,18 @@
 class Chord
-  def initialize(chord_recipe, chord_name)
+  def initialize(chord_recipe, chord_name, tuning=['e', 'a', 'd', 'g', 'b', 'e'])
     @chord_recipe = chord_recipe
     @chord_name = chord_name
+    @tuning = tuning
 
     @@notes = ["c", "cs", "d", "ds", "e", "f", "fs", "g", "gs", "a", "as", "b", "c", "cs", "d", "ds", "e", "f", "fs", "g", "gs", "a", "as", "b"]
-    @@tuning = ['d', 'a', 'd', 'fs', 'a', 'd']
-    @@notes_map_on_string = {
-      6 => @@notes.rotate(@@notes.index(@@tuning[0])),
-      5 => @@notes.rotate(@@notes.index(@@tuning[1])),
-      4 => @@notes.rotate(@@notes.index(@@tuning[2])),
-      3 => @@notes.rotate(@@notes.index(@@tuning[3])),
-      2 => @@notes.rotate(@@notes.index(@@tuning[4])),
-      1 => @@notes.rotate(@@notes.index(@@tuning[5]))
+
+    @notes_map_on_string = {
+      6 => @@notes.rotate(@@notes.index(@tuning[0])),
+      5 => @@notes.rotate(@@notes.index(@tuning[1])),
+      4 => @@notes.rotate(@@notes.index(@tuning[2])),
+      3 => @@notes.rotate(@@notes.index(@tuning[3])),
+      2 => @@notes.rotate(@@notes.index(@tuning[4])),
+      1 => @@notes.rotate(@@notes.index(@tuning[5]))
     }
 
     @@roman_values = {
@@ -39,7 +40,7 @@ class Chord
       22 => "XXII"
     }
 
-    @pairs = {
+    @@pairs = {
       "a" => "10",
       "b" => "11",
       "c" => "12",
@@ -47,7 +48,7 @@ class Chord
       "e" => "14"
     }
 
-    @all_scales = {
+    @@all_scales = {
       "c" => {
         "1" => "c",
         "#1" => "cs",
@@ -284,7 +285,7 @@ class Chord
       }
     }
 
-    @all_formulas = {
+    @@all_formulas = {
       "zzz" => ["1", "b2", "2", "b3", "3", "4", "b5", "5", "b6", "6", "b7", "7"], #chromatic chord, useful for debugging/allows all possibilities
       "maj7" => ["1", "3", "5", "7"],
       "maj9" => ["1", "3", "5", "7", "2"],
@@ -325,7 +326,7 @@ class Chord
     }
 
     #list of all enharmonic spellings, used to determine whether a note should be F# or Gb
-    @all_enharmonics = {
+    @@all_enharmonics = {
       "c" => ["c", "bs", "dbb"],
       "cs" => ["cs", "db"],
       "db" => ["db", "cs"],
@@ -346,8 +347,12 @@ class Chord
 
     @chord_array = getChordArray(@chord_recipe)
     @highest = findHighest(@chord_array)
-    @modifiedChordArray = modifiedChordArray(@chord_array)
-    @label_fret = @@roman_values[1]
+    @difference = @highest > 5 ? @highest - 5 : 0
+    @modifiedChordArray = @highest > 5 ? modifiedChordArray(@chord_array) : @chord_array
+    @label_fret = @highest > 5 ? @@roman_values[@highest - 4] : @@roman_values[1]
+    @label_fret_class = labelFretCss()
+    @chord_name_array = getRootQuality(@chord_name)
+    @chord_spelling_array = getChordNotes(@chord_name)
   end
 
   def getChordArray(chord)
@@ -363,6 +368,48 @@ class Chord
 
   def modifiedChordArray(array)
     array.map { |e| e.to_i != 0 ? (e.to_i - @difference).to_s : e}
+  end
+
+  #finds the highest integer.
+  def findHighest(array)
+    numbers_string_only = array.select { |x| x.to_i }
+    numbers_only = numbers_string_only.map { |e| e.to_i}
+    numbers_only.max
+  end
+
+  #assign CSS class based on how many characters are in Fret Label: V, VI, VII, VII need different styles
+  def labelFretCss
+    length = @label_fret.length
+    "label-fret-#{length}"
+  end
+
+  #split the name of the chord into two parts: Root and Quality
+  def getRootQuality(chord)
+    matchChord = %r{(?<root>[A-G][b#]?)(?<quality>[a-z0-9()b#-]*)(?<slash>/?[A-G]?[b#]?)}.match(chord)
+    original_root = matchChord['root']
+    cleaned_root = matchChord['root'].gsub('#', 's')
+    quality = matchChord['quality']
+    slash = matchChord ['slash']
+
+    {'root' => cleaned_root, 'original_root' => original_root, 'quality' => quality, 'slash' => slash}
+  end
+
+  def getChordNotes(chord)
+    root = getRootQuality(chord)['root'].downcase
+    quality = getRootQuality(chord)['quality']
+    if @@all_formulas[quality]
+      formula = @@all_formulas[quality]
+    else
+      formula = ["1", "3", "5"]
+    end
+    # formula = quality ? @all_formulas[quality] : ["1", "3", "5"]
+    # this short hand stopped working for some reason, I changed it to long-hand above
+    chord_spelling = []
+
+    formula.each do |formula_item|
+      chord_spelling.push(@@all_scales[root][formula_item])
+    end
+    chord_spelling
   end
 
 end
