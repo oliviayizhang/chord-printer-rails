@@ -1,4 +1,6 @@
 class Chord
+  attr_reader :chord_array, :highest, :notes_map_on_string, :tuning, :chord_spelling_array, :all_enharmonics, :modified_chord_array, :chord_name_array, :label_fret_class, :label_fret
+
   def initialize(chord_recipe, chord_name, tuning=['e', 'a', 'd', 'g', 'b', 'e'])
     @chord_recipe = chord_recipe
     @chord_name = chord_name
@@ -348,7 +350,7 @@ class Chord
     @chord_array = getChordArray(@chord_recipe)
     @highest = findHighest(@chord_array)
     @difference = @highest > 5 ? @highest - 5 : 0
-    @modifiedChordArray = @highest > 5 ? modifiedChordArray(@chord_array) : @chord_array
+    @modified_chord_array = @highest > 5 ? modifiedChordArray(@chord_array) : @chord_array
     @label_fret = @highest > 5 ? @@roman_values[@highest - 4] : @@roman_values[1]
     @label_fret_class = labelFretCss()
     @chord_name_array = getRootQuality(@chord_name)
@@ -359,7 +361,7 @@ class Chord
     if chord.length == 6
       chord_split = chord.chars
       chord_array = chord_split.map do |e|
-        e == "a" || e == "b" || e == "c" || e == "d" || e == "e"? @pairs[e] : e
+        e == "a" || e == "b" || e == "c" || e == "d" || e == "e"? @@pairs[e] : e
       end
     else
       "Error, please supply 6 notes for the chord."

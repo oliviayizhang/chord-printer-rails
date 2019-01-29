@@ -1,8 +1,6 @@
 class ChordsController < ApplicationController
   def index
     require 'pry'
-    @chord_one = Chord.new('000xx4', 'D', ['d', 'a', 'd', 'fs', 'a', 'd'])
-
     #list of chords as FORMULA => NAME
     ingredients = {
   #    November Chords, DADF#ad - checked
